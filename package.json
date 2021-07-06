@@ -12,7 +12,7 @@
   "dependencies": {
     "@types/tough-cookie": "^4.0.0",
     "adm-zip": "^0.5.5",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "axios-cookiejar-support": "^1.0.0",
     "cheerio": "^1.0.0-rc.3",
     "cookiejar": "^2.1.2",
