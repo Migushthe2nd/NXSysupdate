@@ -1,81 +1,72 @@
-import {
-    checkFrequency,
-    downloadLocation,
-    downloadPassword,
-    downloadUrlBase,
-    downloadUsername,
-    keysetPath,
-    webhooks,
-    yuiPath,
-} from "../config";
-import SysUpdateScheduler from "./SysUpdateScheduler";
-import Discord from "discord.js";
-import {
-    changelogEmbed,
-    failedDownloadUpdateEmbed,
-    updateEmbed,
-    updateRemovedEmbed,
-} from "./webhookMessages";
-import path from "path";
+import { downloadLocation, yuiPath, gibkeyPath } from './config';
+import SysUpdateScheduler from './SysUpdateScheduler';
+import Discord from 'discord.js';
+import { changelogEmbed, failedDownloadUpdateEmbed, updateEmbed, updateRemovedEmbed } from './webhookMessages';
+import path from 'path';
 
-const hooks = webhooks.map(({id, token}) => new Discord.WebhookClient(id, token));
+const hooks = [{ id: process.env.WEBHOOK_ID, token: process.env.WEBHOOK_TOKEN }].map(
+	({ id, token }) => new Discord.WebhookClient(id, token)
+);
 
 const sendEmbeds = (embeds) => {
-    return new Promise(async (resolve) => {
-        for (const hook of hooks) {
-            for (const embed of embeds) {
-                await hook.send(embed);
-            }
-        }
+	return new Promise(async (resolve) => {
+		for (const hook of hooks) {
+			for (const embed of embeds) {
+				await hook.send(embed);
+			}
+		}
 
-        resolve(null);
-    });
+		resolve(null);
+	});
 };
 
-const scheduler = new SysUpdateScheduler({yuiPath, keysetPath, checkFrequency});
-
-scheduler.on("start", () => {
-    console.log("Scheduler service started!");
+const scheduler = new SysUpdateScheduler({
+	yuiPath,
+	gibkeyPath,
+	keysetPath: process.env.KEYFILE_PATH,
+	checkFrequency: process.env.CHECK_INTERVAL,
 });
 
-scheduler.on("update", async ({version, versionString, buildNumber}) => {
-    try {
-        console.log("Update Found, initiating download");
-
-        const downloadDir = path.join(downloadLocation, `${versionString}-${version}-bn_${buildNumber}`);
-        const {fileName, md5} = await scheduler.handler.downloadLatest(downloadDir);
-
-        const embed = updateEmbed({
-            version,
-            versionString,
-            buildNumber,
-            downloadUrl: downloadUrlBase + fileName,
-            fileMd5: md5,
-            downloadUsername,
-            downloadPassword,
-        });
-        sendEmbeds([embed]).then();
-        // completePending(versionString, embed, null);
-    } catch (e) {
-        console.error(e);
-        const embed = failedDownloadUpdateEmbed({version, versionString, buildNumber});
-        sendEmbeds([embed]).then();
-    }
+scheduler.on('start', () => {
+	console.log('Scheduler service started!');
 });
 
-scheduler.on("updateRemoved", ({version, versionString, buildNumber}) => {
-    console.log("Update Removed");
+scheduler.on('update', async ({ version, versionString, buildNumber }) => {
+	try {
+		console.log('Update Found, initiating download');
 
-    const embed = updateRemovedEmbed({version, versionString, buildNumber});
-    sendEmbeds([embed]).then();
+		const downloadDir = path.join(downloadLocation, `${versionString}-${version}-bn_${buildNumber}`);
+		const { fileName, md5 } = await scheduler.handler.downloadLatest(downloadDir);
+
+		const embed = updateEmbed({
+			version,
+			versionString,
+			buildNumber,
+			downloadUrl: downloadUrlBase + fileName,
+			fileMd5: md5,
+		});
+		sendEmbeds([embed]).then();
+		// completePending(versionString, embed, null);
+	} catch (e) {
+		console.error(e);
+		const embed = failedDownloadUpdateEmbed({ version, versionString, buildNumber });
+		sendEmbeds([embed]).then();
+	}
 });
 
-scheduler.on("changelogUpdate", ({versionString, changelog}) => {
-    console.log("Changelog was updated");
+scheduler.on('updateRemoved', ({ version, versionString, buildNumber }) => {
+	console.log('Update Removed');
 
-    const embed = changelogEmbed({versionString, changelog});
-    sendEmbeds([embed]).then();
-    // completePending(versionString, null, embed);
+	const embed = updateRemovedEmbed({ version, versionString, buildNumber });
+	sendEmbeds([embed]).then();
+});
+
+scheduler.on('changelogUpdate', ({ versionString, changelog }) => {
+	console.log('Changelog was updated');
+
+	const embed = changelogEmbed({ versionString, changelog });
+	sendEmbeds([embed]).then();
+	// completePending(versionString, null, embed);
 });
 
 scheduler.start();
