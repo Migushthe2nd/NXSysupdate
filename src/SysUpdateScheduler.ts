@@ -19,14 +19,10 @@ export default class SysUpdateScheduler extends EventEmitter {
 	 */
 	constructor({
 		checkFrequency = 10,
-		yuiPath,
-		gibkeyPath,
-		certPath = `${__dirname}/../resources/nx_tls_client_cert.pem`,
-		keysetPath = `${__dirname}/../prod.keys`,
 	}) {
 		super();
 		this.checkFrequency = checkFrequency;
-		this.handler = new SysUpdateHandler({ yuiPath, gibkeyPath, certPath, keysetPath });
+		this.handler = new SysUpdateHandler();
 	}
 
 	private _error(error) {

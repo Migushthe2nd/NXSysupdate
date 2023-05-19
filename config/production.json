@@ -1,0 +1,7 @@
+{
+  "keysetPath": "/tools/keys.txt",
+  "downloadLocation": "/downloads",
+  "yuiPath": "/tools/yui/yui",
+  "gibkeyPath": "/tools/gibkey/gibkey",
+  "certPath": "/resources/nx_tls_client_cert.pem"
+}

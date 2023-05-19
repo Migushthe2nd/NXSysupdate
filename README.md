@@ -8,6 +8,6 @@
 ## Required docker setup
 
 - Mount a path to `/downloads` for FW files
+- Mount your keyfile to `/tools/keys.txt` for FW files
 - env `DOWNLOAD_URL_BASE=https://example.com/`
-- env `KEYFILE_PATH=prod.keys`
 - env `CHECK_INTERVAL=5` in minutes
