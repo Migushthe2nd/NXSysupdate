@@ -1,6 +1,6 @@
 import config from 'config'
 import SysUpdateScheduler from './SysUpdateScheduler';
-import {WebhooksAPI} from '@discordjs/core';
+import Discord from 'discord.js';
 import {changelogEmbed, failedDownloadUpdateEmbed, updateEmbed, updateRemovedEmbed} from './webhookMessages';
 import path from 'path';
 
@@ -10,16 +10,14 @@ const yuiPath = config.get("yuiPath") as string;
 const gibkeyPath = config.get("gibkeyPath") as string;
 const certPath = config.get("certPath") as string;
 
-const hooks = [{id: process.env.WEBHOOK_ID, token: process.env.WEBHOOK_TOKEN}].map(
-    ({id, token}) => new WebhooksAPI.WebhookClient(id, token)
+const hooks = [{ url: process.env.WEBHOOK_URL }].map(
+    ({ url }) => new Discord.WebhookClient({url})
 );
 
 const sendEmbeds = (embeds) => {
     return new Promise(async (resolve) => {
         for (const hook of hooks) {
-            for (const embed of embeds) {
-                await hook.send(embed);
-            }
+            await hook.send({embeds});
         }
 
         resolve(null);

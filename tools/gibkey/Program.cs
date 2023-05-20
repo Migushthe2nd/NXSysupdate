@@ -1,5 +1,4 @@
-﻿// exelix11
-using LibHac;
+﻿using LibHac;
 using LibHac.Boot;
 using LibHac.Common;
 using LibHac.Common.FixedArrays;

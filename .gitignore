@@ -118,6 +118,7 @@ keys.txt
 # manual packages
 config.js
 data.json
+data/
 downloads/
 
 yui

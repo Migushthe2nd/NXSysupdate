@@ -1,8 +1,10 @@
 import { EventEmitter } from 'events';
 import SysUpdateHandler from './SysUpdateHandler';
 import editJsonFile from 'edit-json-file';
+import config from "config";
 
-const data = editJsonFile(`${__dirname}/../data.json`, { autosave: true });
+const dataPath = config.get("dataPath") as string;
+const data = editJsonFile(dataPath + "/data.json", { autosave: false });
 
 export default class SysUpdateScheduler extends EventEmitter {
 	handler;

@@ -1,7 +1,8 @@
 {
-  "keysetPath": "/tools/keys.txt",
+  "dataPath": "/data",
+  "keysetPath": "/prod.keys",
   "downloadLocation": "/downloads",
-  "yuiPath": "/tools/yui/yui",
-  "gibkeyPath": "/tools/gibkey/gibkey",
-  "certPath": "/resources/nx_tls_client_cert.pem"
+  "yuiPath": "/tools/yui/",
+  "gibkeyPath": "/tools/gibkey",
+  "certPath": "/usr/src/app/resources/nx_tls_client_cert.pem"
 }
