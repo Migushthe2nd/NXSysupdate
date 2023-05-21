@@ -1,6 +1,6 @@
 import config from 'config'
 import SysUpdateScheduler from './SysUpdateScheduler';
-import Discord from 'discord.js';
+import Discord, {MessageEmbed} from 'discord.js';
 import {changelogEmbed, failedDownloadUpdateEmbed, updateEmbed, updateRemovedEmbed} from './webhookMessages';
 import path from 'path';
 
@@ -10,11 +10,11 @@ const yuiPath = config.get("yuiPath") as string;
 const gibkeyPath = config.get("gibkeyPath") as string;
 const certPath = config.get("certPath") as string;
 
-const hooks = [{ url: process.env.WEBHOOK_URL }].map(
+const hooks = [{ url: String(process.env.WEBHOOK_URL) }].map(
     ({ url }) => new Discord.WebhookClient({url})
 );
 
-const sendEmbeds = (embeds) => {
+const sendEmbeds = (embeds: MessageEmbed[]) => {
     return new Promise(async (resolve) => {
         for (const hook of hooks) {
             await hook.send({embeds});
@@ -32,7 +32,13 @@ scheduler.on('start', () => {
     console.log('Scheduler service started!');
 });
 
-scheduler.on('update', async ({version, versionString, buildNumber}) => {
+export type VersionInfo = {
+    versionString: string,
+    version: string,
+    buildNumber: string
+}
+
+scheduler.on('update', async ({version, versionString, buildNumber}: VersionInfo) => {
     try {
         console.log('Update Found, initiating download');
 
@@ -47,7 +53,7 @@ scheduler.on('update', async ({version, versionString, buildNumber}) => {
             version,
             versionString,
             buildNumber,
-            downloadUrl: path.join(process.env.DOWNLOAD_URL_BASE, versionString, path.basename(filePath)),
+            downloadUrl: path.join(String(process.env.DOWNLOAD_URL_BASE), versionString, path.basename(filePath)),
             fileMd5: md5,
         });
         embed.addFields(extraEmbedFields)

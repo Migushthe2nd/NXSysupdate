@@ -8,9 +8,10 @@ import md5File from 'md5-file';
 import AdmZip from 'adm-zip';
 import config from "config";
 import {ThemePatchesGenerator} from "./automations/ThemePatchesGenerator";
-import Discord, {MessageEmbed} from "discord.js";
+import {EmbedField} from "discord.js";
 import {AutomationInterface} from "./automations/Automation.interface";
 import * as fs from "fs";
+import {VersionInfo} from "./index";
 
 const turndownService = new TurndownService({bulletListMarker: '-'});
 
@@ -32,7 +33,7 @@ export default class SysUpdateHandler {
         ];
     }
 
-    private static _killProcess(process) {
+    private static _killProcess(process: any) {
         if (!process.killed) process.kill();
     }
 
@@ -74,19 +75,21 @@ export default class SysUpdateHandler {
                 const $ = cheerio.load(res.data);
                 const div = $('.update-versions');
 
-                const version = $('h3', div)
-                    .text()
-                    .match(/\d+\.\d+.\d+/)[0];
+                const version = $('h3', div).text().match(/\d+\.\d+.\d+/);
+
+                if (!version) {
+                    return reject('Failed to parse version');
+                }
 
                 const changes = $(div).children(':not(h3)');
                 let changelog = '';
                 changes.each((i, elem) => {
-                    const parsed = turndownService.turndown($(elem).html()) + '\n';
+                    const parsed = turndownService.turndown($(elem).html() ?? "") + '\n';
                     changelog += parsed;
                 });
 
                 resolve({
-                    versionString: version,
+                    versionString: version[0],
                     changelog: changelog.replace(/\n\s{4}/gm, '\n\u2800   '),
                 });
             } catch (e) {
@@ -95,11 +98,7 @@ export default class SysUpdateHandler {
         });
     }
 
-    downloadLatest(mainSaveDir: string, {version, versionString, buildNumber}: {
-        version: string,
-        versionString: string,
-        buildNumber: string
-    }) {
+    downloadLatest(mainSaveDir: string, {version, versionString, buildNumber}: VersionInfo) {
         const tmpDir = tmp.dirSync({unsafeCleanup: true});
         const tmpDirDownload = tmpDir.name;
         let error = true;
@@ -107,7 +106,7 @@ export default class SysUpdateHandler {
         return new Promise<{
             filePath: string;
             md5: string,
-            extraEmbedFields?: MessageEmbed[];
+            extraEmbedFields: EmbedField[];
         }>((resolve, reject) => {
             const ls = spawn("dotnet3", [path.join(yuiPath, "yui.dll"), ...this.yuiBaseArgs, '--latest', '--out', tmpDirDownload], {cwd: yuiPath});
 
@@ -168,7 +167,7 @@ export default class SysUpdateHandler {
                         const extraEmbedFields = [];
                         for (const automation of this.automations) {
                             const saveDir = path.join(mainSaveDir, automation.shortname);
-                            const downloadLinkDir = path.join(process.env.DOWNLOAD_URL_BASE, versionString, automation.shortname);
+                            const downloadLinkDir = path.join(String(process.env.DOWNLOAD_URL_BASE), versionString, automation.shortname);
                             // if path doesn't exist, create it
                             if (!require("fs").existsSync(saveDir)) {
                                 require("fs").mkdirSync(saveDir, {recursive: true});

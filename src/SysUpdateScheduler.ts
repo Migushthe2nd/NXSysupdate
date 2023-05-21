@@ -9,7 +9,7 @@ const data = editJsonFile(dataPath + "/data.json", { autosave: false });
 export default class SysUpdateScheduler extends EventEmitter {
 	handler;
 
-	checkInterval;
+	checkInterval: NodeJS.Timer | null = null;
 	checkFrequency;
 
 	/**
@@ -27,7 +27,7 @@ export default class SysUpdateScheduler extends EventEmitter {
 		this.handler = new SysUpdateHandler();
 	}
 
-	private _error(error) {
+	private _error(error: any) {
 		this.emit('error', error);
 	}
 
