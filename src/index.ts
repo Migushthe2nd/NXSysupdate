@@ -5,7 +5,7 @@ import {changelogEmbed, failedDownloadUpdateEmbed, updateEmbed, updateRemovedEmb
 import path from 'path';
 
 const keysetPath = config.get("keysetPath") as string;
-const downloadLocation = config.get("downloadLocation") as string;
+const downloadsLocation = config.get("downloadsLocation") as string;
 const yuiPath = config.get("yuiPath") as string;
 const gibkeyPath = config.get("gibkeyPath") as string;
 const certPath = config.get("certPath") as string;
@@ -36,16 +36,21 @@ scheduler.on('update', async ({version, versionString, buildNumber}) => {
     try {
         console.log('Update Found, initiating download');
 
-        const downloadDir = path.join(downloadLocation, `${versionString}-${version}-bn_${buildNumber}`);
-        const {fileName, md5} = await scheduler.handler.downloadLatest(downloadDir);
+        const downloadDir = path.join(downloadsLocation, versionString);
+        // if path doesn't exist, create it
+        if (!require("fs").existsSync(downloadDir)) {
+            require("fs").mkdirSync(downloadDir, {recursive: true});
+        }
+        const {filePath, md5, extraEmbedFields} = await scheduler.handler.downloadLatest(downloadDir, {version, versionString, buildNumber});
 
         const embed = updateEmbed({
             version,
             versionString,
             buildNumber,
-            downloadUrl: process.env.DOWNLOAD_URL_BASE + fileName,
+            downloadUrl: path.join(process.env.DOWNLOAD_URL_BASE, versionString, path.basename(filePath)),
             fileMd5: md5,
         });
+        embed.addFields(extraEmbedFields)
         sendEmbeds([embed]).then();
         // completePending(versionString, embed, null);
     } catch (e) {

@@ -8,11 +8,14 @@ import md5File from 'md5-file';
 import AdmZip from 'adm-zip';
 import config from "config";
 import {ThemePatchesGenerator} from "./automations/ThemePatchesGenerator";
+import Discord from "discord.js";
+import {AutomationInterface} from "./automations/Automation.interface";
+import * as fs from "fs";
 
 const turndownService = new TurndownService({bulletListMarker: '-'});
 
 const keysetPath = config.get("keysetPath") as string;
-const downloadLocation = config.get("downloadLocation") as string;
+const downloadsLocation = config.get("downloadsLocation") as string;
 const yuiPath = config.get("yuiPath") as string;
 const gibkeyPath = config.get("gibkeyPath") as string;
 const certPath = path.resolve(__dirname, config.get("certPath")) as string;
@@ -20,7 +23,7 @@ const certPath = path.resolve(__dirname, config.get("certPath")) as string;
 
 export default class SysUpdateHandler {
     yuiBaseArgs: string[];
-    automations: Automation[];
+    automations: AutomationInterface[];
 
     constructor() {
         this.yuiBaseArgs = ['-q', '--cert', certPath, '--keyset', keysetPath];
@@ -92,12 +95,20 @@ export default class SysUpdateHandler {
         });
     }
 
-    downloadLatest(downloadDir) {
+    downloadLatest(mainSaveDir: string, {version, versionString, buildNumber}: {
+        version: string,
+        versionString: string,
+        buildNumber: string
+    }) {
         const tmpDir = tmp.dirSync({unsafeCleanup: true});
         const tmpDirDownload = tmpDir.name;
         let error = true;
 
-        return new Promise<{ filePath: string; fileName: string; md5: string }>((resolve, reject) => {
+        return new Promise<{
+            filePath: string;
+            md5: string,
+            extraEmbedFields?: Discord.RestOrArray<Discord.APIEmbedField>
+        }>((resolve, reject) => {
             const ls = spawn("dotnet3", [path.join(yuiPath, "yui.dll"), ...this.yuiBaseArgs, '--latest', '--out', tmpDirDownload], {cwd: yuiPath});
 
             ls.stderr.on('data', (data) => {
@@ -117,35 +128,59 @@ export default class SysUpdateHandler {
 
             ls.stdout.once('close', () => {
                 if (!error) {
-                    const outFile = downloadDir + '.zip';
+                    const outFile = path.join(mainSaveDir, `${versionString}-${version}-bn_${buildNumber}.zip`);
 
-                    // const zip = new AdmZip();
-                    // zip.addLocalFolder(tmpDirDownload);
-                    // zip.writeZip(outFile);
+                    const zip = new AdmZip();
+                    zip.addLocalFolder(tmpDirDownload);
+                    zip.writeZip(outFile);
                     console.log('Wrote update file to', outFile);
 
                     // derive master key from mariko using gibkey
                     const ls = spawn("dotnet", ["run", tmpDirDownload], {cwd: gibkeyPath});
 
+                    let keyName = '';
                     let masterKey = '';
                     ls.stderr.on('data', (data) => {
                         console.error('[gib] ERROR' + data.toString());
                     });
 
                     ls.stdout.on('data', (data) => {
-                        console.log('[gib] ' + data.toString());
-                        if (data.toString().includes('master_key_')) {
-                            masterKey = data.toString().split('=')[1].trim();
+                        console.log('[gib]', data.toString());
+                        const matches = data.toString().match(/(master_key_..) = (.{32})/);
+                        if (matches) {
+                            keyName = matches[1];
+                            masterKey = matches[2];
                         }
                     });
 
                     ls.stdout.once('close', async () => {
+                        if (!masterKey) {
+                            return reject('Missing master key not found');
+                        }
+
+                        // append new master key to keyset
+                        const data = fs.readFileSync(keysetPath, 'utf8')
+                        if (!data.includes(keyName)) {
+                            fs.appendFileSync(keysetPath, `${data.endsWith('\n') ? '' : '\n'}${keyName} = ${masterKey}\n}`);
+                        }
+
+                        // run automations/hooks
+                        const extraEmbedFields = [];
                         for (const automation of this.automations) {
+                            const saveDir = path.join(mainSaveDir, automation.shortname);
+                            const downloadLinkDir = path.join(process.env.DOWNLOAD_URL_BASE, versionString, automation.shortname);
+                            // if path doesn't exist, create it
+                            if (!require("fs").existsSync(saveDir)) {
+                                require("fs").mkdirSync(saveDir, {recursive: true});
+                            }
                             try {
-                                await automation.run(tmpDirDownload, masterKey);
-                                console.error("[Automation]", automation.constructor.name, "finished");
+                                const embedFields = await automation.run(tmpDirDownload, saveDir, downloadLinkDir, masterKey);
+                                if (embedFields) {
+                                    extraEmbedFields.push(...embedFields);
+                                }
+                                console.error("[Automations]", automation.shortname, "finished");
                             } catch (e) {
-                                console.error("[Automation]", automation.constructor.name, "failed with error:", e);
+                                console.error("[Automations]", automation.shortname, "failed with error:", e);
                             }
                         }
 
@@ -153,8 +188,8 @@ export default class SysUpdateHandler {
                         tmpDir.removeCallback();
                         resolve({
                             filePath: outFile,
-                            fileName: path.basename(outFile),
-                            md5: md5File.sync(outFile)
+                            md5: md5File.sync(outFile),
+                            extraEmbedFields,
                         });
                     });
                 }

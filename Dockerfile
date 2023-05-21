@@ -3,7 +3,7 @@ FROM node:16-alpine AS build-env
 WORKDIR /
 
 # Install .NET 3.1 for yui
-RUN apk add --update --no-cache bash wget libintl libffi-dev openssl1.1-compat-dev dotnet7-sdk
+RUN apk add --update --no-cache bash wget libintl libffi-dev openssl1.1-compat-dev dotnet7-sdk dotnet6-sdk
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
 RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
 RUN chmod +x dotnet-install.sh

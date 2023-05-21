@@ -1,8 +1,9 @@
 {
   "dataPath": "../data",
   "keysetPath": "../prod.keys",
-  "downloadLocation": "../downloads",
+  "downloadsLocation": "../downloads",
   "yuiPath": "../tools/yui/yui.exe",
   "gibkeyPath": "../tools/gibkey/gibkey",
+  "qpatcherPath": "../tools/QPatcher",
   "certPath": "../resources/nx_tls_client_cert.pem"
 }

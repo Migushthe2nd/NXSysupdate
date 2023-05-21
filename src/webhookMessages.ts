@@ -1,4 +1,5 @@
 import Discord, {EmbedBuilder, EmbedData} from 'discord.js';
+import path from "path";
 
 const defaultEmbed = () => {
     return new Discord.EmbedBuilder().setTimestamp();
@@ -38,10 +39,10 @@ export const updateEmbed = ({version, versionString, buildNumber, downloadUrl, f
     return defaultEmbed()
         .setTitle(`New CDN Firmware: ${versionString}`)
         .addFields([
-            {name: 'Build Number', value: buildNumber},
             {name: 'Version Number', value: version},
-            {name: 'Download', value: downloadUrl},
-            {name: 'MD5', value: fileMd5}
+            {name: 'Build Number', value: buildNumber},
+            {name: 'MD5', value: fileMd5},
+            {name: 'Download', value: `[${path.basename(downloadUrl)}](${downloadUrl})`},
         ])
         .setColor('Green')
         .setFooter({text: 'Powered by yui'});
@@ -51,8 +52,8 @@ export const failedDownloadUpdateEmbed = ({version, versionString, buildNumber})
     return defaultEmbed()
         .setTitle(`New CDN Firmware: ${versionString}`)
         .addFields([
-            {name: 'Build Number', value: buildNumber},
             {name: 'Version Number', value: version},
+            {name: 'Build Number', value: buildNumber},
             {name: 'Download', value: '*Could not download firmware*'},
         ])
         .setColor('Green')
@@ -71,8 +72,8 @@ export const updateRemovedEmbed = ({version, versionString, buildNumber}) => {
     return defaultEmbed()
         .setTitle(`Firmware Removed: ${versionString}`)
         .addFields([
-            {name: 'Build Number', value: buildNumber},
             {name: 'Version Number', value: version},
+            {name: 'Build Number', value: buildNumber},
         ])
         .setColor('Red')
         .setFooter({text: 'Powered by yui'});

@@ -1,23 +1,49 @@
+import {spawn} from "child_process";
+import config from "config";
+import path from "path";
+import Discord from "discord.js";
+import {AutomationInterface} from "./Automation.interface";
+
+const keysetPath = config.get("keysetPath") as string;
+const qpatcherPath = config.get("qpatcherPath") as string;
+const downloadsLocation = config.get("downloadsLocation") as string;
+
+
 /**
  * This automation will generate Qlaunch Lockscreen ips patches for a firmware
  */
-export class ThemePatchesGenerator implements Automation {
-    run(ncaDir: string, masterKey: string): Promise<void> {
-        return new Promise((resolve, reject) => {
-            // run gibkey
-            // const ls = spawn("dotnet", ["run", tmpDirDownload], {cwd: gibkeyPath});
-            //
-            // ls.stderr.on('data', (data) => {
-            //     console.error('[gib] ' + data.toString());
-            // });
-            //
-            // ls.stdout.on('data', (data) => {
-            //     console.log('[gib] ' + data.toString());
-            // });
-            //
-            // ls.stdout.once('close', () => {
-            //     tmpDir.removeCallback();
-            // });
+export class ThemePatchesGenerator implements AutomationInterface {
+    name = "QLaunch Lockscreen Patcher";
+    shortname = "qpatcher";
+    run(ncaDir: string, saveDir: string, downloadLinkDir: string, masterKey: string): Promise<void | Discord.RestOrArray<Discord.APIEmbedField>> {
+
+        return new Promise((resolve) => {
+            const ls = spawn("dotnet", ["run", keysetPath, ncaDir, saveDir], {cwd: qpatcherPath});
+
+            let fileName;
+            ls.stderr.on('data', (data) => {
+                console.error('[qpatcher]', data.toString());
+            });
+
+            ls.stdout.on('data', (data) => {
+                console.log('[qpatcher]',  data.toString());
+                const match = data.toString().match(/Saved as: (.*)/);
+                if (match) {
+                    fileName = path.basename(match[1]);
+                }
+            });
+
+            ls.stdout.once('close', () => {
+                if (!fileName) {
+                    resolve([{
+                        name: "QLaunch Patcher", value: `*⚠️ Failed to generate*`
+                    }] as Discord.RestOrArray<Discord.APIEmbedField>);
+                } else {
+                    resolve([{
+                        name: "QLaunch Patcher", value: `[${fileName}](${path.join(downloadLinkDir, fileName)})`
+                    }] as Discord.RestOrArray<Discord.APIEmbedField>);
+                }
+            });
         })
     }
 
