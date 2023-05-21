@@ -32,4 +32,3 @@ RUN yarn run build
 RUN yarn install --production --network-timeout 1000000
 
 CMD yarn run start
-#CMD ls -la /usr/lib/libssl*
