@@ -4,7 +4,7 @@ import editJsonFile from 'edit-json-file';
 import config from "config";
 
 const dataPath = config.get("dataPath") as string;
-const data = editJsonFile(dataPath + "/data.json", { autosave: false });
+const data = editJsonFile(dataPath + "/data.json", { autosave: true });
 
 export default class SysUpdateScheduler extends EventEmitter {
 	handler;
