@@ -1,8 +1,8 @@
-import Discord, {EmbedBuilder, EmbedData} from 'discord.js';
+import {MessageEmbed} from 'discord.js';
 import path from "path";
 
 const defaultEmbed = () => {
-    return new Discord.EmbedBuilder().setTimestamp();
+    return new MessageEmbed().setTimestamp();
 };
 
 // Totally not stolen from https://github.com/discordjs/discord.js/blob/44ac5fe6dfbab21bb4c16ef580d1101167fd15fd/src/util/Util.js#L65-L80
@@ -23,7 +23,7 @@ const _splitMessage = (text, {maxLength = 1000, char = '\n', prepend = '', appen
     return messages.concat(msg).filter((m) => m);
 };
 
-const _addChangelogFields = (embed: EmbedBuilder, text) => {
+const _addChangelogFields = (embed: MessageEmbed, text) => {
     const messages = _splitMessage(text);
 
     if (messages) {
@@ -44,7 +44,7 @@ export const updateEmbed = ({version, versionString, buildNumber, downloadUrl, f
             {name: 'MD5', value: fileMd5},
             {name: 'Download', value: `[${path.basename(downloadUrl)}](${downloadUrl})`},
         ])
-        .setColor('Green')
+        .setColor('GREEN')
         .setFooter({text: 'Powered by yui'});
 };
 
@@ -56,7 +56,7 @@ export const failedDownloadUpdateEmbed = ({version, versionString, buildNumber})
             {name: 'Build Number', value: buildNumber},
             {name: 'Download', value: '*Could not download firmware*'},
         ])
-        .setColor('Green')
+        .setColor('GREEN')
         .setFooter({text: 'Powered by yui'});
 };
 
@@ -64,7 +64,7 @@ export const pendingUpdateEmbed = ({versionString}) => {
     return defaultEmbed()
         .setTitle(`New CDN Firmware: ${versionString}`)
         .setDescription('*Check back again later for more details*')
-        .setColor('Green')
+        .setColor('GREEN')
         .setFooter({text: 'Powered by yui'});
 };
 
@@ -75,14 +75,14 @@ export const updateRemovedEmbed = ({version, versionString, buildNumber}) => {
             {name: 'Version Number', value: version},
             {name: 'Build Number', value: buildNumber},
         ])
-        .setColor('Red')
+        .setColor('RED')
         .setFooter({text: 'Powered by yui'});
 };
 
 export const changelogEmbed = ({versionString, changelog}) => {
     const embed = defaultEmbed()
         .setTitle(`New Firmware Changelog: ${versionString}`)
-        .setColor('DarkGrey');
+        .setColor('DARK_GREY');
 
     _addChangelogFields(embed, changelog);
 
@@ -93,5 +93,5 @@ export const pendingChangelogEmbed = ({versionString}) => {
     return defaultEmbed()
         .setTitle(`Firmware Changelog: ${versionString}`)
         .setDescription('*Check back again later*')
-        .setColor('DarkGrey');
+        .setColor('DARK_GREY');
 };
