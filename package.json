@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node ./dist/index.js",
     "dev": "nodemon",
-    "build": "tsc ./src/**/*.ts --outDir ./dist"
+    "build": "tsc"
   },
   "dependencies": {
     "adm-zip": "^0.5.5",
