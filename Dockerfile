@@ -12,7 +12,6 @@ RUN ln -s /usr/share/dotnet3/dotnet /usr/bin/dotnet3
 RUN ln -s /usr/lib/libssl.so.47.0.6 /usr/lib/libssl.so.1.0.0
 
 COPY ./tools ./tools
-RUN chmod +x ./tools/yui/yui
 
 # build app
 WORKDIR /usr/src/app
