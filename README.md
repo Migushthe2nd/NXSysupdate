@@ -9,7 +9,8 @@
 ## Required docker setup
 
 - Mount a path to `/downloads` for FW files
-- Mount your keyfile to `/tools/prod.keys` for FW files
+- Mount a path to `/data` for data storage
+- Mount your keys to `/prod.keys`
 - env `WEBHOOK_URL=https://discord.com/example`
 - env `DOWNLOAD_URL_BASE=https://example.com/`
 - env `CHECK_INTERVAL=5` in minutes
