@@ -1,4 +1,4 @@
-FROM node:16-alpine AS build-env
+FROM node:17-alpine AS build-env
 
 WORKDIR /
 
