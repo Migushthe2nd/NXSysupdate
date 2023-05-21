@@ -22,7 +22,7 @@ ENV NODE_ENV=production
 COPY package*.json ./
 COPY yarn*.lock ./
 RUN yarn global add typescript@5.0.4
-RUN yarn install --network-timeout 1000000
+RUN yarn install --production=false --network-timeout 1000000
 
 COPY . .
 
