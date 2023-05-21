@@ -8,7 +8,7 @@ import md5File from 'md5-file';
 import AdmZip from 'adm-zip';
 import config from "config";
 import {ThemePatchesGenerator} from "./automations/ThemePatchesGenerator";
-import Discord from "discord.js";
+import Discord, {MessageEmbed} from "discord.js";
 import {AutomationInterface} from "./automations/Automation.interface";
 import * as fs from "fs";
 
@@ -107,7 +107,7 @@ export default class SysUpdateHandler {
         return new Promise<{
             filePath: string;
             md5: string,
-            extraEmbedFields?: Discord.RestOrArray<Discord.APIEmbedField>
+            extraEmbedFields?: MessageEmbed[];
         }>((resolve, reject) => {
             const ls = spawn("dotnet3", [path.join(yuiPath, "yui.dll"), ...this.yuiBaseArgs, '--latest', '--out', tmpDirDownload], {cwd: yuiPath});
 
