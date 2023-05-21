@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2019",
+    "target": "ESNext",
     "module": "commonjs",
     "outDir": "dist",
-    "rootDir": "./",
     "sourceMap": true,
     "strict": true,
     "esModuleInterop": true
