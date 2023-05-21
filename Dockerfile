@@ -29,4 +29,5 @@ RUN yarn run build
 RUN yarn install --production --network-timeout 1000000
 
 ENV NODE_ENV=production
+ENV DOTNET_NOLOGO=true
 CMD yarn run start
