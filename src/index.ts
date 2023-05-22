@@ -81,4 +81,8 @@ scheduler.on('changelogUpdate', ({versionString, changelog}) => {
     // completePending(versionString, null, embed);
 });
 
+scheduler.on('error', (e: any) => {
+    console.error(e);
+});
+
 scheduler.start();
