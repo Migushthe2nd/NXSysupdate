@@ -165,7 +165,7 @@ export default class SysUpdateHandler {
                         const data = fs.readFileSync(keysetPath, 'utf8');
                         const isNewMasterKey = !data.includes(keyName);
                         if (isNewMasterKey) {
-                            fs.appendFileSync(keysetPath, `${data.endsWith('\n') ? '' : '\n'}${newKeyString}\n}`);
+                            fs.appendFileSync(keysetPath, `${data.endsWith('\n') ? '' : '\n'}${masterKeyString}\n}`);
                         }
 
                         // run automations/hooks
