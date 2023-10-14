@@ -137,6 +137,7 @@ export default class SysUpdateHandler {
                     // derive master key from mariko using gibkey
                     const ls = spawn("dotnet", ["run", tmpDirDownload], {cwd: gibkeyPath});
 
+                    let masterkeyString = '';
                     let keyName = '';
                     let masterKey = '';
                     ls.stderr.on('data', (data) => {
@@ -147,6 +148,7 @@ export default class SysUpdateHandler {
                         console.log('[gib]', data.toString());
                         const matches = data.toString().match(/(master_key_..) = (.{32})/);
                         if (matches) {
+                            masterkeyString = matches[0];
                             keyName = matches[1];
                             masterKey = matches[2];
                         }
@@ -158,9 +160,10 @@ export default class SysUpdateHandler {
                         }
 
                         // append new master key to keyset
-                        const data = fs.readFileSync(keysetPath, 'utf8')
-                        if (!data.includes(keyName)) {
-                            fs.appendFileSync(keysetPath, `${data.endsWith('\n') ? '' : '\n'}${keyName} = ${masterKey}\n}`);
+                        const data = fs.readFileSync(keysetPath, 'utf8');
+                        const isNewMasterKey = !data.includes(keyName);
+                        if (isNewMasterKey) {
+                            fs.appendFileSync(keysetPath, `${data.endsWith('\n') ? '' : '\n'}${newKeyString}\n}`);
                         }
 
                         // run automations/hooks
@@ -187,6 +190,8 @@ export default class SysUpdateHandler {
                         tmpDir.removeCallback();
                         resolve({
                             filePath: outFile,
+                            masterKeyString,
+                            isNewMasterKey,
                             md5: md5File.sync(outFile),
                             extraEmbedFields,
                         });

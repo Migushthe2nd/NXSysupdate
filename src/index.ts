@@ -47,7 +47,7 @@ scheduler.on('update', async ({version, versionString, buildNumber}: VersionInfo
         if (!require("fs").existsSync(downloadDir)) {
             require("fs").mkdirSync(downloadDir, {recursive: true});
         }
-        const {filePath, md5, extraEmbedFields} = await scheduler.handler.downloadLatest(downloadDir, {version, versionString, buildNumber});
+        const {filePath, md5, extraEmbedFields, masterKeyString, isNewMasterKey} = await scheduler.handler.downloadLatest(downloadDir, {version, versionString, buildNumber});
 
         const embed = updateEmbed({
             version,
@@ -55,6 +55,8 @@ scheduler.on('update', async ({version, versionString, buildNumber}: VersionInfo
             buildNumber,
             downloadUrl: path.join(String(process.env.DOWNLOAD_URL_BASE), versionString, path.basename(filePath)),
             fileMd5: md5,
+            masterKeyString,
+            isNewMasterKey,
         });
         embed.addFields(extraEmbedFields)
         sendEmbeds([embed]).then();

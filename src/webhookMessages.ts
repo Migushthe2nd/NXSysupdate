@@ -36,13 +36,14 @@ const _addChangelogFields = (embed: MessageEmbed, text: string) => {
     }
 };
 
-export const updateEmbed = ({version, versionString, buildNumber, downloadUrl, fileMd5}: VersionInfo & {downloadUrl: string, fileMd5: string}) => {
+export const updateEmbed = ({version, versionString, buildNumber, downloadUrl, fileMd5, masterKeyString, isNewMasterKey}: VersionInfo & {downloadUrl: string, fileMd5: string}) => {
     return defaultEmbed()
         .setTitle(`New CDN Firmware: ${versionString}`)
         .addFields([
             {name: 'Version Number', value: version},
             {name: 'Build Number', value: buildNumber},
             {name: 'MD5', value: fileMd5},
+            {name: `Master Key ${isNewMasterKey ? '(new)': '(unchanged)'}`, value: '`' + masterKeyString + '`'},
             {name: 'Download', value: `[${path.basename(downloadUrl)}](${downloadUrl})`},
         ])
         .setColor('GREEN')
