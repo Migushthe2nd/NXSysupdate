@@ -107,6 +107,8 @@ export default class SysUpdateHandler {
             filePath: string;
             md5: string,
             extraEmbedFields: EmbedField[];
+            masterKeyString: string,
+            isNewMasterKey: boolean,
         }>((resolve, reject) => {
             const ls = spawn("dotnet3", [path.join(yuiPath, "yui.dll"), ...this.yuiBaseArgs, '--latest', '--out', tmpDirDownload], {cwd: yuiPath});
 
@@ -137,7 +139,7 @@ export default class SysUpdateHandler {
                     // derive master key from mariko using gibkey
                     const ls = spawn("dotnet", ["run", tmpDirDownload], {cwd: gibkeyPath});
 
-                    let masterkeyString = '';
+                    let masterKeyString = '';
                     let keyName = '';
                     let masterKey = '';
                     ls.stderr.on('data', (data) => {
@@ -148,7 +150,7 @@ export default class SysUpdateHandler {
                         console.log('[gib]', data.toString());
                         const matches = data.toString().match(/(master_key_..) = (.{32})/);
                         if (matches) {
-                            masterkeyString = matches[0];
+                            masterKeyString = matches[0];
                             keyName = matches[1];
                             masterKey = matches[2];
                         }
@@ -190,10 +192,10 @@ export default class SysUpdateHandler {
                         tmpDir.removeCallback();
                         resolve({
                             filePath: outFile,
-                            masterKeyString,
-                            isNewMasterKey,
                             md5: md5File.sync(outFile),
                             extraEmbedFields,
+                            masterKeyString,
+                            isNewMasterKey,
                         });
                     });
                 }
